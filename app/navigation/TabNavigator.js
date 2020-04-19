@@ -1,5 +1,5 @@
 import React from 'react';
-import { TouchableNativeFeedback, View } from 'react-native';
+import { TouchableNativeFeedback, View,Image } from 'react-native';
 
 import { createStackNavigator } from 'react-navigation-stack';
 import { createBottomTabNavigator } from 'react-navigation-tabs';
@@ -84,7 +84,7 @@ const SettingsStackNav = createStackNavigator({
                             name="align-left"
                         />
                     </TouchableNativeFeedback>
-                )
+                ),
             };
         },
     }
@@ -104,7 +104,40 @@ HomeStackNav.navigationOptions = ({ navigation }) => {
   };
 
 
-export default TabNavigator = createBottomTabNavigator({
-    Home: HomeStackNav,
-    Settings: SettingsStackNav,
+export default TabNavigator = createBottomTabNavigator(
+    {
+    Home: {  
+        screen:HomeStackNav,  
+        navigationOptions:{  
+          tabBarLabel:'Home',  
+          tabBarIcon:({tintColor})=>(  
+            <Icon type="Feather" name="home" style={{color : tintColor}} />  
+          )  
+        }  
+      },
+    Settings:  {  
+        screen:SettingsStackNav,  
+        navigationOptions:{  
+          tabBarLabel:'Settings',  
+          tabBarIcon:({tintColor})=>(  
+              <Icon type="Feather" name="settings" style={{color : tintColor}} />  
+              
+          ),
+        }  
+      }
+},{
+    tabBarOptions:{
+        activeTintColor : 'white',
+        activeBackgroundColor : Colors.appBarColor,
+        inactiveTintColor : Colors.separatorColor,
+            style:{height : 60},
+        labelStyle : {
+            fontSize: 16
+        },
+        tabStyle : {
+            backgroundColor: Colors.appBarColor,
+        },
+        adaptive : true,
+        keyboardHidesTabBar : true,
+    }
 });

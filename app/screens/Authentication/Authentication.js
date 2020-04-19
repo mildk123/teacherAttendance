@@ -31,7 +31,7 @@ class Login extends Component {
           }}>
           <Form>
             <Item stackedLabel>
-              <Label style={{fontWeight: 'bold', backgroundColor: 'none'}}>Specific ID</Label>
+              <Label style={{fontWeight: 'bold'}}>Specific ID</Label>
               <Input style={{padding: 5}} placeholder="apple123"/>
             </Item>
 

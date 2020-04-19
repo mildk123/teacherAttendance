@@ -14,6 +14,7 @@ const Colors = {
   backgroundColor: "#FFFFFF", //
 
   appBarColor : 'teal', //  rgb (123, 171, 237)
+  darkAppBarColor: "#009391",
   appBarTextColor: '#FCFCFE', // rgb (252, 252, 254)
 
   iconColorPrimary : '#FCFCFE', // rgb (252, 252, 254)
