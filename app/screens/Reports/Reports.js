@@ -156,7 +156,7 @@ export default class SheetJS extends Component {
               <TableWrapper>
                 <Row
                   data={this.state.cols}
-                  style={styles.thead}
+                  style={styles.thead}  
                   textStyle={styles.text}
                   widthArr={this.state.widthArr}
                 />
