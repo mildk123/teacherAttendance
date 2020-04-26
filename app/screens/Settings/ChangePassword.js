@@ -19,11 +19,71 @@ import {
   Input,
   Label,
 } from 'native-base';
-
+import axios from 'axios';
 import Colors from '../../modules/Colors';
 import styling from '../../modules/styleSheet';
 
 class ChangePassword extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      currentPass: '',
+      newPass: '',
+      cNewPass: '',
+    };
+  }
+
+  ChangePassword = async () => {
+    var cp = this.state.currentPass;
+    var np = this.state.newPass;
+    var cnp = this.state.cNewPass;
+
+    if (cp !== '' && np !== '' && cnp !== '') {
+      if (np !== cnp) {
+        alert('New Password and Confirm New Password does not match');
+      } else {
+        axios('http://192.168.1.102/Presence/api/ChangePassword', {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Content-Type': 'application/json',
+          },
+          data: {
+            UserID: 'admin',
+            OldPassword: cp,
+            NewPassword : np
+          },
+          withCredentials: true,
+          credentials: 'same-origin',
+        })
+          .then(response => {
+            return response;
+          })
+          .then(data => {
+            if (data.status == 200) {
+              alert(data.data.ResponseMessage);
+              this.props.navigation.popToTop();
+            }
+          })
+          .catch(err => {
+            if (err.response.status == 403) {
+              alert(`Error: ${err.response.data.ResponseMessage}`);
+            }
+          });
+      }
+    } else {
+      alert('Username/Password required');
+    }
+  };
+
+  onChange = (val, name) => {
+    this.setState({
+      [name]: val,
+    });
+  };
+
   render() {
     return (
       <View
@@ -55,15 +115,26 @@ class ChangePassword extends Component {
             <Form>
               <Item stackedLabel>
                 <Label>Current Password</Label>
-                <Input style={{color: Colors.appBarColor}} />
+                <Input
+                  onChangeText={val => this.onChange(val, 'currentPass')}
+                  style={{color: Colors.appBarColor}}
+                />
               </Item>
               <Item stackedLabel>
                 <Label>New Password</Label>
-                <Input secureTextEntry style={{color: Colors.appBarColor}} />
+                <Input
+                  onChangeText={val => this.onChange(val, 'newPass')}
+                  secureTextEntry
+                  style={{color: Colors.appBarColor}}
+                />
               </Item>
               <Item stackedLabel>
                 <Label>Confirm New Password</Label>
-                <Input secureTextEntry style={{color: Colors.appBarColor}} />
+                <Input
+                  onChangeText={val => this.onChange(val, 'cNewPass')}
+                  secureTextEntry
+                  style={{color: Colors.appBarColor}}
+                />
               </Item>
             </Form>
           </View>
@@ -71,7 +142,7 @@ class ChangePassword extends Component {
 
         <View style={{alignItems: 'flex-end'}}>
           <Button
-          onPress={() => this.props.navigation.popToTop()}
+            onPress={() => this.ChangePassword()}
             style={{
               width: 150,
               justifyContent: 'center',
