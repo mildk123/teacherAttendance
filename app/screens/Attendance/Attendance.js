@@ -3,24 +3,157 @@ import { View, } from 'react-native'
 import { Modal, TouchableHighlight, Alert } from 'react-native';
 
 import { Label, Card, CardItem, Left, Body, Right, List, Button, Text, Icon, Input, Item } from 'native-base'
-
+import moment from "moment";
+import axios from 'axios';
 
 class Attendance extends Component {
+    constructor(props) {
+        super(props)
+        this.state = {
+            modalVisible: false,
+            currentTime: '',
+            currentDate: '',
+            lateBtnClick : false,
+            timeLate: '',
+            currentShift: '',
+            currentSession: '',
+            classDetails : [],
+        }        
+    }
+    
+    componentDidMount = () => {
+        // console.log(moment().format("hh mm A"))
+        this.setState({
+            currentTime : moment().format("hh:mm A"),
+            currentDate : moment().format("Do MMMM YYYY")
+        },() => {
+            this.getShift();
+        })
 
-    state = {
-        modalVisible: false,
+        if(this.props.navigation.state.params.selectedClass){
+            this.setState({
+                classDetails: {...this.props.navigation.state.params.selectedClass}
+            })
+        }
     };
 
+    getShift = () => {
+        // var currentTime = moment(this.state.currentTime, 'h:mm a');
+        var currentTime = moment('10:51 am', 'h:mm a');
 
+        var morningClassStart1 = moment('8:40am', 'h:mm a');
+        var morningClassEnd1 = moment('10:15am', 'h:mm a');
+        var morningClassStart2 = moment('10:30am', 'h:mm a');
+        var morningClassEnd2 = moment('11:40am', 'h:mm a');
+
+        var eveningClassStart1 = moment('12:30pm', 'h:mm a');
+        var eveningClassEnd1 = moment('2:00pm', 'h:mm a');
+        var eveningClassStart2 = moment('2:15pm', 'h:mm a');
+        var eveningClassEnd2 = moment('3:30pm', 'h:mm a');
+
+        if((currentTime.isSameOrAfter(morningClassStart1)) && currentTime.isSameOrBefore(morningClassEnd1)){
+            // alert("Morning, 1st Half, Before Break")
+            this.setState({
+                currentShift:  "Morning",
+                currentSession: "first"
+            })
+        }else 
+        if((currentTime.isSameOrAfter(morningClassStart2)) && currentTime.isSameOrBefore(morningClassEnd2)){
+            // alert("Morning, 2nd Half, After Break")
+            this.setState({
+                currentShift:  "Morning",
+                currentSession: "second"
+            })
+        }else 
+        if((currentTime.isSameOrAfter(eveningClassStart1)) && currentTime.isSameOrBefore(eveningClassEnd1)){
+            // alert("Evening, 1st Half, Before Break")
+            this.setState({
+                currentShift:  "Evening",
+                currentSession: "first"
+            })
+        }else 
+        if((currentTime.isSameOrAfter(eveningClassStart2)) && currentTime.isSameOrBefore(eveningClassEnd2)){
+            // alert("Evening, 2nd Half, After Break")
+            this.setState({
+                currentShift:  "Evening",
+                currentSession: "second"
+            })
+        }else if(currentTime.isSameOrAfter( moment("3:30 pm", 'h:mm a') ) && currentTime.isSameOrBefore(  moment("8:40 am", 'h:mm a')) ){
+            alert("University is closed.")
+        }
+        else{
+            alert("Break Time.")
+        }
+
+    }
+
+    AttendanceToDb = async () => {
+        var requestOnTimeBody = {
+            InstructorID :this.state.classDetails.InstructorID,
+            CourseID :this.state.classDetails.CourseID,
+            ClassID :this.state.classDetails.ClassID,
+            Shift : this.state.currentShift
+          }
+          var requesLateBody = {
+            InstructorID :this.state.classDetails.InstructorID,
+            CourseID :this.state.classDetails.CourseID,
+            ClassID :this.state.classDetails.ClassID,
+            Is_Late_Before: this.state.currentSession == "first" ? true : null,
+	        Is_Late_After: this.state.currentSession == "second" ? true : null,
+	        Late_Time_Before:this.state.currentSession == "first" ? this.state.timeLate : null,
+	        Late_Time_After:this.state.currentSession == "second" ? this.state.timeLate : null,
+            Shift : this.state.currentShift
+          }
+        axios('http://192.168.1.108/Presence/api/MarkAttendence', {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Content-Type': 'application/json',
+          },
+          data: this.state.lateBtnClick ? requesLateBody : requestOnTimeBody,
+          withCredentials: true,
+          credentials: 'same-origin',
+        })
+          .then(response => {
+            return response;
+          })
+          .then(data => {
+            if(data.status == 200){
+              alert( data.data.ResponseMessage);
+              this.setState({
+                modalVisible: false
+            },() => {
+                this.props.navigation.popToTop();
+            });
+            }else{
+                alert('Wrong Status Code:')
+            }
+          })
+          .catch(err => {
+            // if(err.response.status == 403){
+            //   alert(`Error: ${err.response.data.ResponseMessage}`)
+            // }
+            console.log(err)
+          });
+        
+      };
+    
     lateDialog = () => {
         this.setState({ modalVisible: !this.state.modalVisible });
     }
 
-
+    onChange = (val) => {
+        this.setState({
+            timeLate : val
+        })
+    }
 
     render() {
+        const {ScheduleID,ClassID,InstructorID,CourseID,Shift,ClassDate,ClassTime,InstructorName,CourseName} = this.state.classDetails;
         return (
             <View style={{ flex: 1, flexDirection: 'column', backgroundColor: 'white' }}>
+               {/* Modal */}
                 <Modal
                     animationType="fade"
                     transparent={true}
@@ -48,7 +181,6 @@ class Attendance extends Component {
                             alignItems: 'center',
                         }}
                     >
-
                         <View style={{ 
                             marginVertical: 25, 
                             borderBottomWidth: 1, 
@@ -73,7 +205,8 @@ class Attendance extends Component {
                             }}>
                                 Current Time:</Label>
                             <Input
-                                placeholder="Tap here"
+                                placeholder="5 mins"
+                                onChangeText={(val) => this.onChange(val)}
                                 placeholderTextColor="#fff"
                                 keyboardType="number-pad"
                                 style={{ fontSize: 20, color: 'teal',borderBottomColor: 'teal', borderBottomWidth:1, }}
@@ -90,25 +223,21 @@ class Attendance extends Component {
                                 alignItems: 'center',
                                 borderRadius: 5
                             }}
-                            onPress={() => {
-                                this.setState({
-                                    modalVisible: !this.state.modalVisible
-                                });
-                            }}>
+                            onPress={() => {this.setState({lateBtnClick: true},() =>  this.AttendanceToDb())}}
+                            >
                             <Text style={{ color: 'white',fontWeight: 'bold' }}>Mark Late</Text>
                         </TouchableHighlight>
 
                         </View>
                     </View>
                 </Modal>
-
                 {/*Clock Card */}
                 <View style={{ backgroundColor: '#F9A12EFF', padding: 16, margin: 15, borderRadius: 15, elevation: 10 }}>
                     <View style={{
                         justifyContent: 'center',
                     }}>
                         <Text style={{ fontSize: 32, color: 'white', fontWeight: "bold", letterSpacing: 2 }}>
-                            08:12 AM
+                            {this.state.currentTime}
                         </Text>
                     </View>
                     <View style={{
@@ -118,7 +247,7 @@ class Attendance extends Component {
                         overflow: 'hidden'
                     }}>
                         <Text style={{ fontSize: 16, color: 'white' }}>
-                            22 January 2020
+                            {this.state.currentDate}
                             </Text>
 
                     </View>
@@ -132,7 +261,7 @@ class Attendance extends Component {
                             <View style={{ width: 150 }}>
                                 <Text style={{ fontWeight: 'bold', fontSize: 16, color: 'white' }}>Teacher Name:</Text>
                             </View>
-                            <Text style={{ color: 'white', fontSize: 17 }}>Muhammad Zubair</Text>
+                <Text style={{ color: 'white', fontSize: 17 }}>{InstructorName}</Text>
                         </View>
                     </View>
 
@@ -141,25 +270,25 @@ class Attendance extends Component {
                             <View style={{ width: 150 }}>
                                 <Text style={{ fontWeight: 'bold', fontSize: 16, color: 'white' }}>Course Name:</Text>
                             </View>
-                            <Text style={{ color: 'white', fontSize: 17 }}>Object Oriented Programming</Text>
+                <Text style={{ color: 'white', fontSize: 17 }}>{CourseName}</Text>
                         </View>
                     </View>
 
                     <View style={{ backgroundColor: 'teal', padding: 10, margin: 5, borderRadius: 7 }}>
                         <View style={{ flexDirection: 'row', justifyContent: "flex-start" }}>
                             <View style={{ width: 150 }}>
-                                <Text style={{ fontWeight: 'bold', fontSize: 16, color: 'white' }}>Check IN:</Text>
+                                <Text style={{ fontWeight: 'bold', fontSize: 16, color: 'white' }}>Start Time:</Text>
                             </View>
-                            <Text style={{ color: 'white', fontSize: 17 }}>08:40 AM</Text>
+                <Text style={{ color: 'white', fontSize: 17 }}>{ClassTime}</Text>
                         </View>
                     </View>
 
                     <View style={{ backgroundColor: 'teal', padding: 10, margin: 5, borderRadius: 7 }}>
                         <View style={{ flexDirection: 'row', justifyContent: "flex-start" }}>
                             <View style={{ width: 150 }}>
-                                <Text style={{ fontWeight: 'bold', fontSize: 16, color: 'white' }}>Class Session:</Text>
+                                <Text style={{ fontWeight: 'bold', fontSize: 16, color: 'white' }}>Course ID:</Text>
                             </View>
-                            <Text style={{ color: 'white', fontSize: 17 }}>1st Session</Text>
+                            <Text style={{ color: 'white', fontSize: 17 }}>{CourseID}</Text>
                         </View>
                     </View>
 
@@ -168,7 +297,16 @@ class Attendance extends Component {
                             <View style={{ width: 150 }}>
                                 <Text style={{ fontWeight: 'bold', fontSize: 16, color: 'white' }}>Shift:</Text>
                             </View>
-                            <Text style={{ color: 'white', fontSize: 17 }}>Morning</Text>
+                <Text style={{ color: 'white', fontSize: 17 }}>{Shift}</Text>
+                        </View>
+                    </View>
+
+                    <View style={{ backgroundColor: 'teal', padding: 10, margin: 5, borderRadius: 7 }}>
+                        <View style={{ flexDirection: 'row', justifyContent: "flex-start" }}>
+                            <View style={{ width: 150 }}>
+                                <Text style={{ fontWeight: 'bold', fontSize: 16, color: 'white' }}>Session:</Text>
+                            </View>
+                <Text style={{ color: 'white', fontSize: 17 }}>{this.state.currentSession}</Text>
                         </View>
                     </View>
 
@@ -177,7 +315,7 @@ class Attendance extends Component {
                             <View style={{ width: 150 }}>
                                 <Text style={{ fontWeight: 'bold', fontSize: 16, color: 'white' }}>Class ID:</Text>
                             </View>
-                            <Text style={{ color: 'white', fontSize: 17 }}>123456</Text>
+                <Text style={{ color: 'white', fontSize: 17 }}>{ClassID}</Text>
                         </View>
                     </View>
                 </View>
@@ -185,7 +323,7 @@ class Attendance extends Component {
 
                 {/* Buttons Card */}
                 <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-evenly', alignItems: "center" }}>
-                    <Button onPress={() => { this.props.navigation.popToTop() }} iconRight 
+                    <Button onPress={() => { this.AttendanceToDb()}} iconRight 
                         style={{ width: 150, borderRadius: 5, justifyContent: "center", elevation: 7 }}>
                         <Text>ON TIME</Text>
                         <Icon type="Feather" name="check" />

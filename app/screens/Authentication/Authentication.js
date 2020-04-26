@@ -49,10 +49,9 @@ class Login extends Component {
         }
       })
       .catch(err => {
-        // if(err.response.status == 403){
-          // alert(`Error: ${err.response.data.ResponseMessage}`)
-        // }
-        console.log('err', err)
+        if(err.response.status == 403){
+          alert(`Error: ${err.response.data.ResponseMessage}`)
+        }
       });
     }else{
       alert("Username/Password required")

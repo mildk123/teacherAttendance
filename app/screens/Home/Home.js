@@ -1,100 +1,273 @@
-import React, { Component } from "react";
-import { View, TouchableOpacity } from "react-native";
-import HomeNav from "../../helper/HomeNav";
+import React, {Component} from 'react';
+import {View, TouchableOpacity} from 'react-native';
+import HomeNav from '../../helper/HomeNav';
 
-import Colors from "../../modules/Colors";
-import HomeStudentCard from "../../helper/HomeStudentCard";
+import Colors from '../../modules/Colors';
+import HomeStudentCard from '../../helper/HomeStudentCard';
 
-import { Card, CardItem, Body, Text, Left, Right, Icon } from 'native-base';
-import { ScrollView } from "react-native-gesture-handler";
+import {Card, CardItem, Body, Text, Left, Right, Icon} from 'native-base';
+import {ScrollView} from 'react-native-gesture-handler';
+import axios from 'axios';
+import moment from 'moment';
 
 class Home extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      currentShift: '',
+      currentShiftText: '',
+      shiftColor: '',
+      classes: [],
+      dataLoaded: true,
+    };
+  }
+
+  componentDidMount = () => {
+    this.getShift();
+  };
+
+  getClasses = () => {
+    const {currentShift} = this.state;
+    console.log('currentShift', currentShift);
+    axios(
+      `http://192.168.1.108/Presence/api/ShiftSchedule?Shift=${currentShift}`,
+      {
+        method: 'GET',
+      },
+    )
+      .then(response => {
+        return response;
+      })
+      .then(resp => {
+        console.log(resp)
+        if (resp.status === 200) {
+          this.setState({
+            classes: [...this.state.classes, ...resp.data.ShiftScheduleList],
+            dataLoaded: true,
+          });
+        } else {
+          alert('Invalid error occured.');
+        }
+      })
+      .catch(err => {
+        // if (err.response.status == 401) {
+        //   alert(`Error: ${err.response.data.ResponseMessage}`);
+        // }
+        console.log(err);
+      });
+  };
+
+  getShift = () => {
+    // var currentTime = moment(this.state.currentTime, 'h:mm a');
+    var currentTime = moment('8:51 am', 'h:mm a');
+
+    var morningClassStart1 = moment('8:40am', 'h:mm a');
+    var morningClassEnd1 = moment('10:15am', 'h:mm a');
+    var morningClassStart2 = moment('10:30am', 'h:mm a');
+    var morningClassEnd2 = moment('11:40am', 'h:mm a');
+
+    var eveningClassStart1 = moment('12:30pm', 'h:mm a');
+    var eveningClassEnd1 = moment('2:00pm', 'h:mm a');
+    var eveningClassStart2 = moment('2:15pm', 'h:mm a');
+    var eveningClassEnd2 = moment('3:30pm', 'h:mm a');
+
+    if (
+      currentTime.isSameOrAfter(morningClassStart1) &&
+      currentTime.isSameOrBefore(morningClassEnd1)
+    ) {
+      // alert("Morning, 1st Half, Before Break")
+      this.setState(
+        {
+          currentShift: 'Morning',
+          currentSession: 'first',
+          currentShiftText: 'Morning, 1st Shift',
+          shiftColor: '#FFBE7BFF',
+        },
+        () => this.getClasses(),
+      );
+    } else if (
+      currentTime.isSameOrAfter(morningClassStart2) &&
+      currentTime.isSameOrBefore(morningClassEnd2)
+    ) {
+      // alert("Morning, 2nd Half, After Break")
+      this.setState(
+        {
+          currentShift: 'Morning',
+          currentSession: 'second',
+          currentShiftText: 'Morning, 2nd Shift',
+          shiftColor: '#FFBE7BFF',
+        },
+        () => this.getClasses(),
+      );
+    } else if (
+      currentTime.isSameOrAfter(eveningClassStart1) &&
+      currentTime.isSameOrBefore(eveningClassEnd1)
+    ) {
+      // alert("Evening, 1st Half, Before Break")
+      this.setState(
+        {
+          currentShift: 'Evening',
+          currentSession: 'first',
+          currentShiftText: 'Evening, 1st Shift',
+          shiftColor: '#ff7f00',
+        },
+        () => this.getClasses(),
+      );
+    } else if (
+      currentTime.isSameOrAfter(eveningClassStart2) &&
+      currentTime.isSameOrBefore(eveningClassEnd2)
+    ) {
+      // alert("Evening, 2nd Half, After Break")
+      this.setState(
+        {
+          currentShift: 'Evening',
+          currentSession: 'second',
+          currentShiftText: 'Evening, 2nd Shift',
+          shiftColor: '#ff7f00',
+        },
+        () => this.getClasses(),
+      );
+    } else if (
+      currentTime.isSameOrAfter(moment('3:30 pm', 'h:mm a')) &&
+      currentTime.isSameOrBefore(moment('8:40 am', 'h:mm a'))
+    ) {
+      this.setState({
+        currentShiftText: 'University is closed.',
+        shiftColor: 'grey',
+      });
+    } else {
+      this.setState({
+        currentShiftText: 'Break',
+        shiftColor: 'grey',
+      });
+    }
+  };
+
+  callChild = (selectedItem) => {
+    this.props.navigation.navigate('Attendance', {selectedClass: this.state.classes[selectedItem], currentSession: this.state.currentShift});
+
+  }
+
   render() {
     return (
-      <View style={{ flex: 1, backgroundColor: Colors.brandOne }}>
-
-        <Card style={{ width: '90%', alignSelf: 'center', marginTop: 15, borderRadius: 10, elevation: 8 }}>
-          <CardItem style={{ justifyContent: 'center', alignItems: "center", backgroundColor: '#FFBE7BFF', borderRadius: 10 }}>
-            <Body style={{ alignItems: 'center', }}>
-              <Text style={{ fontSize: 25, fontWeight: 'bold', letterSpacing: 1, color: 'white' }}>Morning, 1st Shift</Text>
+      <View style={{flex: 1, backgroundColor: Colors.brandOne}}>
+        <Card
+          style={{
+            width: '90%',
+            alignSelf: 'center',
+            marginTop: 15,
+            borderRadius: 10,
+            elevation: 8,
+          }}>
+          <CardItem
+            style={{
+              justifyContent: 'center',
+              alignItems: 'center',
+              backgroundColor: this.state.shiftColor,
+              borderRadius: 10,
+            }}>
+            <Body style={{alignItems: 'center'}}>
+              <Text
+                style={{
+                  fontSize: 25,
+                  fontWeight: 'bold',
+                  letterSpacing: 1,
+                  color: 'white',
+                }}>
+                {this.state.currentShiftText}
+              </Text>
             </Body>
           </CardItem>
         </Card>
-
-
         {/* Separator */}
-        <View style={{ width: '90%', alignSelf: 'center', borderBottomColor: 'grey', borderBottomWidth: 1 }}>
-          <Text></Text>
+        <View
+          style={{
+            width: '90%',
+            alignSelf: 'center',
+            borderBottomColor: 'grey',
+            borderBottomWidth: 1,
+          }}>
+          <Text />
         </View>
 
-        <ScrollView style={{ padding: 15 }}>
-
-          <TouchableOpacity onPress={() => {  }}>
-            <Card style={{
-              flexDirection: 'row',
-              justifyContent: 'center',
-              padding: 15,
-              borderRadius: 5,
-              elevation: 5,
-              backgroundColor: 'slategray'
-            }}>
-              <View style={{ flexDirection: 'row', }}>
-                <View style={{ width: '40%', }}>
-                  <Text style={{ fontWeight: '700', color: 'white' }}>Instructor Name: </Text>
-                  <Text style={{ fontWeight: '700', color: 'white' }}>Room # :</Text>
-                  <Text style={{ fontWeight: '700', color: 'white' }}>Class ID :</Text>
-                  <Text style={{ fontWeight: '700', color: 'white' }}>Class Time :</Text>
-                  <Text style={{ fontWeight: '700', color: 'white' }}>Status :</Text>
-                </View>
-                <View style={{ width: '55%' }}>
-                  <Text style={{ color: 'white', fontStyle: 'italic' }}>Muhammad Zubair</Text>
-                  <Text style={{ color: 'white', fontStyle: 'italic' }}>29</Text>
-                  <Text style={{ color: 'white', fontStyle: 'italic' }}>120648</Text>
-                  <Text style={{ color: 'white', fontStyle: 'italic' }}>08:11 AM</Text>
-                  <Text style={{ color: 'white', fontStyle: 'italic' }}>Marked</Text>
-                </View>
-              </View>
-              <View style={{ alignItems: 'flex-start', justifyContent: 'center' }}>
-                <Icon type='MaterialCommunityIcons' name="checkbox-marked" style={{ color: 'white', fontSize: 35 }} />
-              </View>
-            </Card>
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={() => { this.props.navigation.navigate('Attendance') }}>
-            <Card style={{
-              flexDirection: 'row',
-              justifyContent: 'center',
-              padding: 15,
-              borderRadius: 5,
-              elevation: 5,
-              backgroundColor: 'teal'
-            }}>
-              <View style={{ flexDirection: 'row', }}>
-                <View style={{ width: '40%', }}>
-                  <Text style={{ fontWeight: '700', color: 'white' }}>Instructor Name: </Text>
-                  <Text style={{ fontWeight: '700', color: 'white' }}>Room # :</Text>
-                  <Text style={{ fontWeight: '700', color: 'white' }}>Class ID :</Text>
-                  <Text style={{ fontWeight: '700', color: 'white' }}>Class Time :</Text>
-                  <Text style={{ fontWeight: '700', color: 'white' }}>Status :</Text>
-                </View>
-                <View style={{ width: '55%' }}>
-                  <Text style={{ color: 'white', fontStyle: 'italic' }}>Muhammad Zubair</Text>
-                  <Text style={{ color: 'white', fontStyle: 'italic' }}>29</Text>
-                  <Text style={{ color: 'white', fontStyle: 'italic' }}>120648</Text>
-                  <Text style={{ color: 'white', fontStyle: 'italic' }}>08:11 AM</Text>
-                  <Text style={{ color: 'white', fontStyle: 'italic' }}>Marked</Text>
-                </View>
-              </View>
-              <View style={{ alignItems: 'flex-start', justifyContent: 'center' }}>
-                <Icon type='MaterialCommunityIcons' name="checkbox-blank-outline" style={{ color: 'white', fontSize: 35 }} />
-              </View>
-            </Card>
-          </TouchableOpacity>
-
-
-
-        </ScrollView>
-
+        {this.state.dataLoaded ? (
+          <ScrollView style={{padding: 15}}>
+            {this.state.classes.map((item, key) => {
+             return <TouchableOpacity
+                key={key}
+                onPress={() => {
+                  this.callChild(key)
+                }}>
+                <Card
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                    padding: 15,
+                    borderRadius: 5,
+                    elevation: 5,
+                    backgroundColor: 'teal',
+                  }}>
+                  <View style={{flexDirection: 'row'}}>
+                    <View style={{width: '40%'}}>
+                      <Text style={{fontWeight: '700', color: 'white'}}>
+                        Instructor Name:
+                      </Text>
+                      <Text style={{fontWeight: '700', color: 'white'}}>
+                        Room # :
+                      </Text>
+                      <Text style={{fontWeight: '700', color: 'white'}}>
+                        Class ID :
+                      </Text>
+                      <Text style={{fontWeight: '700', color: 'white'}}>
+                        Class Time :
+                      </Text>
+                      <Text style={{fontWeight: '700', color: 'white'}}>
+                        Shift :
+                      </Text>
+                      <Text style={{fontWeight: '700', color: 'white'}}>
+                        Status :
+                      </Text>
+                    </View>
+                    <View style={{width: '55%'}}>
+                      <Text style={{color: 'white', fontStyle: 'italic'}}>
+                        {item.InstructorName}
+                      </Text>
+                      <Text style={{color: 'white', fontStyle: 'italic'}}>
+                        {item.RoomNumber}
+                      </Text>
+                      <Text style={{color: 'white', fontStyle: 'italic'}}>
+                        {item.ClassID}
+                      </Text>
+                      <Text style={{color: 'white', fontStyle: 'italic'}}>
+                        {item.ClassTime}
+                      </Text>
+                      <Text style={{color: 'white', fontStyle: 'italic'}}>
+                        {item.Shift}
+                      </Text>
+                      <Text style={{color: 'white', fontStyle: 'italic'}}>
+                        Marked
+                      </Text>
+                    </View>
+                  </View>
+                  <View
+                    style={{
+                      alignItems: 'flex-start',
+                      justifyContent: 'center',
+                    }}>
+                    <Icon
+                      type="MaterialCommunityIcons"
+                      name="checkbox-blank-outline"
+                      style={{color: 'white', fontSize: 35}}
+                    />
+                  </View>
+                </Card>
+              </TouchableOpacity>;
+            })}
+          </ScrollView>
+        ) : (
+          <Text>No Data Found</Text>
+        )}
       </View>
     );
   }
