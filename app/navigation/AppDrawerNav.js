@@ -1,65 +1,102 @@
 import React from 'react';
-import { createDrawerNavigator } from 'react-navigation-drawer';
+import {createDrawerNavigator} from 'react-navigation-drawer';
 
 // HOME STACK .......................
 import TabNavigator from './TabNavigator';
-
 
 import WeeklyStat from '../screens/WeeklyStat';
 import TeachersList from '../screens/TeachersList';
 import Reports from '../screens/Reports';
 
+import {Icon} from 'native-base';
+import {Image} from 'react-native';
+import Colors  from '../modules/Colors';
 
-import { Icon } from 'native-base';
-
-export default AppDrawerNav = createDrawerNavigator(
+export default (AppDrawerNav = createDrawerNavigator(
   {
     Home: {
       screen: TabNavigator,
-      navigationOptions: ({ navigation }) => {
+      navigationOptions: ({navigation}) => {
         return {
           drawerLabel: 'Home',
           drawerIcon: (
-            <Icon type="AntDesign" name="home" style={{ fontSize: 23 }} />
+            <Image
+              source={require('../assets/images/icon/drawerHome.png')}
+              style={{
+                resizeMode: 'center',
+                height: 50,
+              }}
+            />
           ),
         };
       },
     },
     WeeklyStat: {
       screen: WeeklyStat,
-      navigationOptions: ({ navigation }) => {
+      navigationOptions: ({navigation}) => {
         return {
           drawerLabel: 'Weekly Statistics',
           drawerIcon: (
-            <Icon type="AntDesign" name="home" style={{ fontSize: 23 }} />
+            <Image
+              source={require('../assets/images/icon/drawerStats.png')}
+              style={{
+                resizeMode: 'center',
+                height: 50,
+              }}
+            />
           ),
         };
       },
     },
     Reports: {
       screen: Reports,
-      navigationOptions: ({ navigation }) => {
+      navigationOptions: ({navigation}) => {
         return {
           drawerLabel: 'Reports',
           drawerIcon: (
-            <Icon type="AntDesign" name="home" style={{ fontSize: 23 }} />
+            <Image
+              source={require('../assets/images/icon/drawerReports.png')}
+              style={{
+                resizeMode: 'center',
+                height: 50,
+              }}
+            />
           ),
         };
       },
     },
     TeachersList: {
       screen: TeachersList,
-      navigationOptions: ({ navigation }) => {
+      navigationOptions: ({navigation}) => {
         return {
           drawerLabel: 'Teachers List',
           drawerIcon: (
-            <Icon type="AntDesign" name="home" style={{ fontSize: 23 }} />
+            <Image
+              source={require('../assets/images/icon/drawerTeachers.png')}
+              style={{
+                resizeMode: 'center',
+                height: 50,
+              }}
+            />
           ),
         };
-      }
-    }
+      },
+    },
   },
   {
     drawerWidth: '50%',
+    drawerType: 'slide',
+    edgeWidth: 50,
+    hideStatusBar : false,
+    overlayColor: 'rgba(0, 0, 0,0.7)',
+    drawerBackgroundColor : Colors.drawerBackgroundColor,
+    contentOptions: {
+      activeBackgroundColor: Colors.drawerSelectedColor,
+      activeTintColor: Colors.drawerSelectedTextColor,
+      inactiveTintColor: Colors.drawerinActiveTextColor,
+      // inactiveBackgroundColor: Colors.drawerinActiveColor,
+      labelStyle: 'italic',
+    }
+
   },
-);
+));

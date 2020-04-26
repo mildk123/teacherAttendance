@@ -14,12 +14,17 @@ const Colors = {
   backgroundColor: "#FFFFFF", //
 
   appBarColor : 'teal', //  rgb (123, 171, 237)
-  darkAppBarColor: "#009391",
+  darkAppBarColor: "#017270",
   appBarTextColor: '#FCFCFE', // rgb (252, 252, 254)
 
   iconColorPrimary : '#FCFCFE', // rgb (252, 252, 254)
   iconColorSecondary : '#7BABED', //  rgb (123, 171, 237)
 
+  drawerBackgroundColor: '#3fada8',
+  drawerSelectedColor:'white',
+  drawerSelectedTextColor:'black',
+  drawerinActiveColor:'#F29492',
+  drawerinActiveTextColor:'white',
 
 }
 
