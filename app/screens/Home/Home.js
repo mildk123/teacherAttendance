@@ -16,6 +16,7 @@ class Home extends Component {
 
     this.state = {
       currentShift: '',
+      currentTime: '',
       currentShiftText: '',
       shiftColor: '',
       classes: [],
@@ -24,14 +25,20 @@ class Home extends Component {
   }
 
   componentDidMount = () => {
-    this.getShift();
+     this.getTime();
   };
+
+  getTime =() => {
+    var timeNow = moment().format("hh:mm A");
+    this.setState({
+      currentTime : timeNow ,
+    },() => this.getShift())
+  }
 
   getClasses = () => {
     const {currentShift} = this.state;
-    console.log('currentShift', currentShift);
     axios(
-      `http://192.168.1.108/Presence/api/ShiftSchedule?Shift=${currentShift}`,
+      `http://192.168.1.102/Presence/api/ShiftSchedule?Shift=${currentShift}`,
       {
         method: 'GET',
       },
@@ -60,8 +67,10 @@ class Home extends Component {
 
   getShift = () => {
     // var currentTime = moment(this.state.currentTime, 'h:mm a');
+    this.setState({
+      currentTime : "8:51 am"
+    })
     var currentTime = moment('8:51 am', 'h:mm a');
-
     var morningClassStart1 = moment('8:40am', 'h:mm a');
     var morningClassEnd1 = moment('10:15am', 'h:mm a');
     var morningClassStart2 = moment('10:30am', 'h:mm a');
@@ -145,7 +154,11 @@ class Home extends Component {
   };
 
   callChild = (selectedItem) => {
-    this.props.navigation.navigate('Attendance', {selectedClass: this.state.classes[selectedItem], currentSession: this.state.currentShift});
+    this.props.navigation.navigate('Attendance', 
+    {selectedClass: this.state.classes[selectedItem], 
+      currentSession: this.state.currentShift,
+      currentTime : this.state.currentTime
+    });
 
   }
 
