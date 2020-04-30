@@ -1,85 +1,96 @@
 import React, {Component} from 'react';
-import {
-  StyleSheet,
-  View,
-} from 'react-native';
-import {Button, Text} from 'native-base';
+import {StyleSheet, View} from 'react-native';
 import Colors from '../../modules/Colors';
+import PureChart from 'react-native-pure-chart';
+import {Button, Text, Picker, Icon, Label, Item} from 'native-base';
 
-import {
-  LineChart,
-  BarChart,
-  PieChart,
-  ProgressChart,
-  ContributionGraph,
-  StackedBarChart
-} from "react-native-chart-kit";
+let sampleData = [
+  {
+    seriesName: 'nabeel',
+    data: [
+      {x: 'date1', y: 30},
+      {x: 'date2', y: 200},
+      {x: 'date3', y: 170},
+      {x: 'date4', y: 5},
+      {x: 'date3', y: 170},
+      {x: 'date4', y: 250},
+      {x: 'date3', y: 170},
+      {x: 'date4', y: 250},
+      {x: 'date5', y: 123},
+    ],
+    color: Colors.darkAppBarColor,
+  },
+];
 
-class WeeklyStat extends Component {
+export default class WeeklyStat extends Component {
+  constructor(props) {
+    super(props)
+  
+    this.state = {
+       selectedTeacher : ''
+    }
+  }
+  
+  onTeacherChange(value) {
+    this.setState({
+      selectedTeacher: value,
+    });
+  }
+
   render() {
     return (
-      <View style={{flex: 1, padding:20, backgroundColor: Colors.appBarColor}}>
+      <View style={{flex: 1, padding: 20, backgroundColor: Colors.appBarColor}}>
         <View style={{padding: 5}}>
-          <Text style={{fontSize: 26, fontWeight: 'bold', color: 'white'}}>
-            Weekly Report
+          <Text style={{fontSize: 32, fontWeight: 'bold', color: 'white'}}>
+            View Statistics
           </Text>
-
           <Text style={styles.instructions}>
-            You can view the records of a teacher in form of pie chart.
+            You can view Statistics of a selected teacher. Select the teachers
+            Name/ID from the below dropdown
           </Text>
         </View>
+        
+        
+        <Item style={{marginVertical: 16}} picker>
+          <Label style={{color: 'white', fontSize: 22, fontWeight: '700'}}>
+            Select Teacher
+          </Label>
+          <Picker
+            mode="dialog"
+            iosIcon={<Icon name="arrow-down" />}
+            style={{width: undefined}}
+            selectedValue={this.state.selectedTeacher}
+            onValueChange={this.onTeacherChange.bind(this)}>
+            <Picker.Item label="Wallet" value="key0" />
+          </Picker>
+        </Item>
 
-        <LineChart
-    data={{
-      labels: ["January", "February", "March", "April", "May", "June"],
-      datasets: [
-        {
-          data: [
-            Math.random() * 100,
-            Math.random() * 100,
-            Math.random() * 100,
-            Math.random() * 100,
-            Math.random() * 100,
-            Math.random() * 100
-          ]
-        }
-      ]
-    }}
-    width={Dimensions.get("window").width} // from react-native
-    height={220}
-    yAxisLabel="$"
-    yAxisSuffix="k"
-    yAxisInterval={1} // optional, defaults to 1
-    chartConfig={{
-      backgroundColor: "#e26a00",
-      backgroundGradientFrom: "#fb8c00",
-      backgroundGradientTo: "#ffa726",
-      decimalPlaces: 2, // optional, defaults to 2dp
-      color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-      labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-      style: {
-        borderRadius: 16
-      },
-      propsForDots: {
-        r: "6",
-        strokeWidth: "2",
-        stroke: "#ffa726"
-      }
-    }}
-    bezier
-    style={{
-      marginVertical: 8,
-      borderRadius: 16
-    }}
-  />
-
+        
+        <View
+          style={{
+            flex: 1,
+            paddingTop: 0,
+            borderRadius: 35,
+            overflow: 'hidden',
+          }}>
+          <PureChart
+            defaultColumnWidth={15}
+            backgroundColor="white"
+            labelColor="teal"
+            height={200}
+            data={sampleData}
+            type="bar"
+            width={'100%'}
+            defaultColumnWidth={25}
+            defaultColumnMargin={14}
+            highlightColor={'grey'}
+          />
+        </View>
 
       </View>
     );
   }
 }
-
-export default WeeklyStat;
 
 const styles = StyleSheet.create({
   instructions: {
