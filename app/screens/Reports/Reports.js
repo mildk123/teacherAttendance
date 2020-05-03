@@ -569,10 +569,14 @@ export default class SheetJS extends Component {
         }
       })
       .catch(err => {
-        // if(err.response.status == 403){
-        // alert(`Error: ${err.response.data.ResponseMessage}`)
-        // }
-        console.log(err);
+        if(err.response.status == 403){
+        alert(`Error: ${err.response.data.ResponseMessage}`)
+        }
+        else{
+          console.log('msg',err.message); // Just the message , no error
+          let errMSG = JSON.parse(err.request._response.response) ;//request details
+            alert(errMSG.ResponseMessage);
+        }
       });
   };
 

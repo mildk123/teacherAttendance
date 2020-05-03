@@ -39,12 +39,13 @@ class ChangePassword extends Component {
     var cp = this.state.currentPass;
     var np = this.state.newPass;
     var cnp = this.state.cNewPass;
-
+    console.log("Called Function")
     if (cp !== '' && np !== '' && cnp !== '') {
       if (np !== cnp) {
         alert('New Password and Confirm New Password does not match');
       } else {
-        axios(`${connectionObjects.myServerIp_}${connectionObjects.changePassAPI}`, {
+        console.log(connectionObjects.myServerIp_+connectionObjects.changePassAPI);
+        axios(connectionObjects.myServerIp_+connectionObjects.changePassAPI, {
           method: 'POST',
           mode: 'no-cors',
           headers: {
@@ -54,7 +55,8 @@ class ChangePassword extends Component {
           data: {
             UserID: 'admin',
             OldPassword: cp,
-            NewPassword : np
+            NewPassword : np,
+            Is_Active : 1
           },
           withCredentials: true,
           credentials: 'same-origin',
@@ -69,10 +71,15 @@ class ChangePassword extends Component {
             }
           })
           .catch(err => {
-            console.log('err', err)
-            // if (err.response.status == 403) {
-            //   alert(`Error: ${err.response.data.ResponseMessage}`);
-            // }
+            if (err.response.status == 401) {
+              alert(`Error: ${err.response.data.ResponseMessage}`);
+            } else if (err.response.status == 500) {
+              alert(`Error: ${err.response.data}`);
+            }else{
+              console.log('msg',err.message); // Just the message , no error
+              let errMSG = JSON.parse(err.request._response.response) ;//request details
+                alert(errMSG.ResponseMessage);
+            }
           });
       }
     } else {

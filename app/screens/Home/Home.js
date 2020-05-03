@@ -63,7 +63,9 @@ class Home extends Component {
         }else if (err.response.status == 500){
           alert(`Error: ${err.response.data.ResponseMessage}`);
         }else{
-          console.log(err);
+          console.log('msg',err.message); // Just the message , no error
+          let errMSG = JSON.parse(err.request._response.response) ;//request details
+            alert(errMSG.ResponseMessage);
         }
       });
   };

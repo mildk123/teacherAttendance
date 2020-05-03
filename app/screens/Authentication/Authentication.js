@@ -21,6 +21,7 @@ class Login extends Component {
   }
 
   loginFunc = async () => {
+    console.log('LOGIN FUNC')
     if (this.state.username !== '' && this.state.password !== '') {
       axios(connectionObjects.myServerIp_+connectionObjects.loginAPI, {
         method: 'POST',
@@ -49,8 +50,12 @@ class Login extends Component {
         .catch(err => {
           if (err.response.status == 401) {
             alert(`Error: ${err.response.data.ResponseMessage}`);
-          } else if (err.response.status) {
+          } else if (err.response.status == 500) {
             alert(`Error: ${err.response.data}`);
+          }else{
+            console.log('msg',err.message); // Just the message , no error
+            let errMSG = JSON.parse(err.request._response.response) ;//request details
+              alert(errMSG.ResponseMessage);
           }
         });
     } else {
@@ -66,23 +71,24 @@ class Login extends Component {
 
   render() {
     return (
-      <View style={{flex: 1, backgroundColor: 'teal'}}>
+      <View style={{flex: 1, backgroundColor: Colors.appBarColor}}>
         <View
           style={{
             flex: 1,
             margin: 50,
             borderRadius: 25,
             backgroundColor: 'white',
+            elevation: 5
           }}>
           <View
             style={{
               backgroundColor: 'silver',
-              flex: 1.5,
+              flex: 1,
               borderRadius: 25,
               justifyContent: 'center',
               alignItems: 'center',
             }}>
-            <Image source={require('../../assets/images/icon/bulb.png')} />
+            <Image style={{resizeMode: 'contain', width: 350,}} source={require('../../assets/images/icon/bulb.png')} />
           </View>
 
           <View
@@ -130,6 +136,7 @@ class Login extends Component {
             </View>
           </View>
         </View>
+
       </View>
     );
   }
