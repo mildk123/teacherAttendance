@@ -5,5 +5,5 @@ export const connectionObjects = {
   changePassAPI: "/Presence/api/ChangePassword",
   reportsAPI : '/Presence/api/AttendanceHistory',
   attedanceAPI: "/Presence/api/MarkAttendence",
-  teachersListAPI : "/Presence/api/TeachersList"
+  teachersListAPI : "/Presence/api/TeachersList",
 };

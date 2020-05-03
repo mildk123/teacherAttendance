@@ -7,6 +7,7 @@ import { TextStyles, IconStyles } from '../../modules/styleSheet';
 import Colors from '../../modules/Colors';
 
 import TeachersList from './TeachersList';
+import ViewDetails from './ViewDetails';
 
 export default TeachersListStackNav = createStackNavigator({
     TeacherList: {
@@ -25,6 +26,28 @@ export default TeachersListStackNav = createStackNavigator({
                             type="Feather"
                             style={IconStyles.headerIconleft}
                             name="align-left"
+                        />
+                    </TouchableNativeFeedback>
+                ),
+            };
+        },
+    },
+    ViewDetails: {
+        screen: ViewDetails,
+        navigationOptions: ({ navigation }) => {
+            return {
+                headerTitle: 'Information',
+                headerTintColor: Colors.appBarTextColor,
+                headerStyle: {
+                    backgroundColor: Colors.appBarColor,
+                },
+                headerTitleStyle: TextStyles.headerTitleStyle,
+                headerLeft: () => (
+                    <TouchableNativeFeedback onPress={() => navigation.pop()}>
+                        <Icon
+                            type="Feather"
+                            style={IconStyles.headerIconleft}
+                            name="arrow-left"
                         />
                     </TouchableNativeFeedback>
                 ),
