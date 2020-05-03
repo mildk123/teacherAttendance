@@ -18,6 +18,7 @@ import {
 } from 'native-base';
 import moment from 'moment';
 import axios from 'axios';
+import { connectionObjects } from '../../modules/connection'
 
 class Attendance extends Component {
   constructor(props) {
@@ -146,7 +147,7 @@ class Attendance extends Component {
       };
     }
 
-    axios('http://192.168.1.102/Presence/api/MarkAttendence', {
+    axios(connectionObjects.myServerIp_+connectionObjects.attedanceAPI, {
       method: 'POST',
       mode: 'no-cors',
       headers: {

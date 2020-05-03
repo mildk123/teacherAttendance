@@ -22,6 +22,7 @@ import {
 import axios from 'axios';
 import Colors from '../../modules/Colors';
 import styling from '../../modules/styleSheet';
+import { connectionObjects } from '../../modules/connection'
 
 class ChangePassword extends Component {
   constructor(props) {
@@ -43,7 +44,7 @@ class ChangePassword extends Component {
       if (np !== cnp) {
         alert('New Password and Confirm New Password does not match');
       } else {
-        axios('http://192.168.1.102/Presence/api/ChangePassword', {
+        axios(`${connectionObjects.myServerIp_}${connectionObjects.changePassAPI}`, {
           method: 'POST',
           mode: 'no-cors',
           headers: {
@@ -68,9 +69,10 @@ class ChangePassword extends Component {
             }
           })
           .catch(err => {
-            if (err.response.status == 403) {
-              alert(`Error: ${err.response.data.ResponseMessage}`);
-            }
+            console.log('err', err)
+            // if (err.response.status == 403) {
+            //   alert(`Error: ${err.response.data.ResponseMessage}`);
+            // }
           });
       }
     } else {

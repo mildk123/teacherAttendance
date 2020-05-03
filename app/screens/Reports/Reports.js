@@ -24,6 +24,7 @@ import {
 import Colors from '../../modules/Colors';
 import axios from 'axios';
 import moment from 'moment';
+import {connectionObjects} from '../../modules/connection';
 import RNDateTimePicker from '@react-native-community/datetimepicker';
 
 const DDP = ExternalStorageDirectoryPath + '/';
@@ -540,7 +541,7 @@ export default class SheetJS extends Component {
       });
   };
   getReportData = () => {
-    axios('http://192.168.1.102/Presence/api/AttendanceHistory', {
+    axios(connectionObjects.myServerIp_+connectionObjects.reportsAPI, {
       method: 'POST',
       mode: 'no-cors',
       headers: {

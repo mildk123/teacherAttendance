@@ -9,6 +9,7 @@ import {Card, CardItem, Body, Text, Left, Right, Icon} from 'native-base';
 import {ScrollView} from 'react-native-gesture-handler';
 import axios from 'axios';
 import moment from 'moment';
+import { connectionObjects } from '../../modules/connection'
 
 class Home extends Component {
   constructor(props) {
@@ -34,11 +35,10 @@ class Home extends Component {
       currentTime : timeNow ,
     },() => this.getShift())
   }
-
   getClasses = () => {
     const {currentShift} = this.state;
     axios(
-      `http://192.168.1.102/Presence/api/ShiftSchedule?Shift=${currentShift}`,
+      `${connectionObjects.myServerIp_}${connectionObjects.getClassesAPI}${currentShift}`,
       {
         method: 'GET',
       },
@@ -58,13 +58,15 @@ class Home extends Component {
         }
       })
       .catch(err => {
-        // if (err.response.status == 401) {
-        //   alert(`Error: ${err.response.data.ResponseMessage}`);
-        // }
-        console.log(err);
+        if (err.response.status == 401) {
+          alert(`Error: ${err.response.data.ResponseMessage}`);
+        }else if (err.response.status == 500){
+          alert(`Error: ${err.response.data.ResponseMessage}`);
+        }else{
+          console.log(err);
+        }
       });
   };
-
   getShift = () => {
     // var currentTime = moment(this.state.currentTime, 'h:mm a');
     this.setState({
@@ -152,6 +154,7 @@ class Home extends Component {
       });
     }
   };
+
 
   callChild = (selectedItem) => {
     this.props.navigation.navigate('Attendance', 

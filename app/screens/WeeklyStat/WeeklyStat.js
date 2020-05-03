@@ -90,7 +90,7 @@ export default class WeeklyStat extends Component {
       </View>
     );
   }
-}
+}``
 
 const styles = StyleSheet.create({
   instructions: {

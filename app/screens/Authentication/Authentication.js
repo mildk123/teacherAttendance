@@ -8,6 +8,7 @@ import {TextStyles} from '../../modules/styleSheet';
 
 import {Form, Item, Text, Icon, Input, Label, Button} from 'native-base';
 import axios from 'axios';
+import { connectionObjects } from '../../modules/connection'
 
 class Login extends Component {
   constructor(props) {
@@ -21,7 +22,7 @@ class Login extends Component {
 
   loginFunc = async () => {
     if (this.state.username !== '' && this.state.password !== '') {
-      axios('http://192.168.1.102/Presence/api/login', {
+      axios(connectionObjects.myServerIp_+connectionObjects.loginAPI, {
         method: 'POST',
         mode: 'no-cors',
         headers: {
@@ -111,8 +112,8 @@ class Login extends Component {
 
             <View style={{alignSelf: 'center'}}>
               <Button
-                // onPress={() => this.loginFunc()}
-                onChangeText={this.props.navigation.navigate('App')}
+                onPress={() => this.loginFunc()}
+                // onChangeText={this.props.navigation.navigate('App')}
                 iconRight
                 style={{
                   backgroundColor: 'teal',
