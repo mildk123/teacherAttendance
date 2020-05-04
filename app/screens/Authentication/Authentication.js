@@ -6,9 +6,9 @@ import Colors, {brandSix, brandFive} from '../../modules/Colors';
 import MyComp from '../../modules/connection';
 import {TextStyles} from '../../modules/styleSheet';
 
-import {Form, Item, Text, Icon, Input, Label, Button} from 'native-base';
+import {Form, Item, Text, Icon, Input, Spinner, Button} from 'native-base';
 import axios from 'axios';
-import { connectionObjects } from '../../modules/connection'
+import {connectionObjects} from '../../modules/connection';
 
 class Login extends Component {
   constructor(props) {
@@ -17,50 +17,71 @@ class Login extends Component {
     this.state = {
       username: '',
       password: '',
+      isLoading: false,
     };
   }
 
   loginFunc = async () => {
-    console.log('LOGIN FUNC')
-    if (this.state.username !== '' && this.state.password !== '') {
-      axios(connectionObjects.myServerIp_+connectionObjects.loginAPI, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Content-Type': 'application/json',
-        },
-        data: {
-          UserID: this.state.username,
-          Password: this.state.password,
-        },
-        withCredentials: true,
-        credentials: 'same-origin',
-      })
-        .then(response => {
-          return response;
-        })
-        .then(data => {
-          if (data.status == 200) {
-            alert(data.data.ResponseMessage);
-            this.props.navigation.navigate('App');
-            console.log(data.data);
-          }
-        })
-        .catch(err => {
-          if (err.response.status == 401) {
-            alert(`Error: ${err.response.data.ResponseMessage}`);
-          } else if (err.response.status == 500) {
-            alert(`Error: ${err.response.data}`);
-          }else{
-            console.log('msg',err.message); // Just the message , no error
-            let errMSG = JSON.parse(err.request._response.response) ;//request details
-              alert(errMSG.ResponseMessage);
-          }
-        });
-    } else {
-      alert('Username/Password required');
-    }
+    console.log('LOGIN FUNC');
+    this.setState(
+      {
+        isLoading: true,
+      },
+      () => {
+        if (this.state.username !== '' && this.state.password !== '') {
+          axios(connectionObjects.myServerIp_ + connectionObjects.loginAPI, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: {
+              'Access-Control-Allow-Origin': '*',
+              'Content-Type': 'application/json',
+            },
+            data: {
+              UserID: this.state.username,
+              Password: this.state.password,
+            },
+            withCredentials: true,
+            credentials: 'same-origin',
+          })
+            .then(response => {
+              return response;
+            })
+            .then(data => {
+              if (data.status == 200) {
+                // alert(data.data.ResponseMessage);
+                this.setState(
+                  {
+                    isLoading: false,
+                  },
+                  () => {
+                    this.props.navigation.navigate('App');
+                  },
+                );
+              }
+            })
+            .catch(err => {
+              this.setState(
+                {
+                  isLoading: false,
+                },
+                () => {
+                  if (err.response.status == 401) {
+                    alert(`Error: ${err.response.data.ResponseMessage}`);
+                  } else if (err.response.status == 500) {
+                    alert(`Error: ${err.response.data}`);
+                  } else {
+                    console.log('msg', err.message); // Just the message , no error
+                    let errMSG = JSON.parse(err.request._response.response); //request details
+                    alert(errMSG.ResponseMessage);
+                  }
+                },
+              );
+            });
+        } else {
+          alert('Username/Password required');
+        }
+      },
+    );
   };
 
   onChange = (val, name) => {
@@ -70,6 +91,14 @@ class Login extends Component {
   };
 
   render() {
+    const {isLoading} = this.state;
+    if (isLoading) {
+      return (
+        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+          <Spinner color="teal" />
+        </View>
+      );
+    }
     return (
       <View style={{flex: 1, backgroundColor: Colors.appBarColor}}>
         <View
@@ -78,7 +107,7 @@ class Login extends Component {
             margin: 50,
             borderRadius: 25,
             backgroundColor: 'white',
-            elevation: 5
+            elevation: 5,
           }}>
           <View
             style={{
@@ -88,7 +117,10 @@ class Login extends Component {
               justifyContent: 'center',
               alignItems: 'center',
             }}>
-            <Image style={{resizeMode: 'contain', width: 350,}} source={require('../../assets/images/icon/bulb.png')} />
+            <Image
+              style={{resizeMode: 'contain', width: 350}}
+              source={require('../../assets/images/icon/bulb.png')}
+            />
           </View>
 
           <View
@@ -98,17 +130,30 @@ class Login extends Component {
               paddingHorizontal: 25,
             }}>
             <Form>
-              <Item stackedLabel>
-                <Label style={{fontWeight: 'bold'}}>Username</Label>
+              <Item>
+                {/* <Label style={{fontWeight: 'bold'}}>Username</Label> */}
+                <Icon
+                  style={{color: Colors.appBarColor, fontSize: 28}}
+                  name="account-circle"
+                  type="MaterialIcons"
+                />
                 <Input
                   onChangeText={val => this.onChange(val, 'username')}
+                  placeholder="Enter your username"
                   style={{padding: 5}}
                 />
               </Item>
 
-              <Item stackedLabel>
-                <Label style={{fontWeight: 'bold'}}>Password</Label>
+              <Item>
+                {/* <Label style={{fontWeight: 'bold'}}>Password</Label> */}
+                <Icon
+                  active
+                  style={{color: Colors.appBarColor, fontSize: 28}}
+                  name="lock-outline"
+                  type="MaterialIcons"
+                />
                 <Input
+                  placeholder="Enter your password"
                   style={{padding: 5}}
                   onChangeText={val => this.onChange(val, 'password')}
                   secureTextEntry
@@ -136,7 +181,6 @@ class Login extends Component {
             </View>
           </View>
         </View>
-
       </View>
     );
   }
