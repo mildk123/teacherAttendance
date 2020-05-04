@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {View, TouchableOpacity} from 'react-native';
+import {View, TouchableOpacity, RefreshControl} from 'react-native';
 import HomeNav from '../../helper/HomeNav';
 
 import Colors from '../../modules/Colors';
@@ -22,59 +22,33 @@ class Home extends Component {
       shiftColor: '',
       classes: [],
       dataLoaded: true,
+      refreshing: false
     };
-  }
+  };
 
   componentDidMount = () => {
      this.getTime();
   };
-
+  onRefresh = () => {
+    this.setState({
+      refreshing : true
+    },() => {
+      this.getClasses();
+    })
+  }
+  
   getTime =() => {
     var timeNow = moment().format("hh:mm A");
     this.setState({
       currentTime : timeNow ,
     },() => this.getShift())
-  }
-  getClasses = () => {
-    const {currentShift} = this.state;
-    axios(
-      `${connectionObjects.myServerIp_}${connectionObjects.getClassesAPI}${currentShift}`,
-      {
-        method: 'GET',
-      },
-    )
-      .then(response => {
-        return response;
-      })
-      .then(resp => {
-        console.log(resp)
-        if (resp.status === 200) {
-          this.setState({
-            classes: [...this.state.classes, ...resp.data.ShiftScheduleList],
-            dataLoaded: true,
-          });
-        } else {
-          alert('Invalid error occured.');
-        }
-      })
-      .catch(err => {
-        if (err.response.status == 401) {
-          alert(`Error: ${err.response.data.ResponseMessage}`);
-        }else if (err.response.status == 500){
-          alert(`Error: ${err.response.data.ResponseMessage}`);
-        }else{
-          console.log('msg',err.message); // Just the message , no error
-          let errMSG = JSON.parse(err.request._response.response) ;//request details
-            alert(errMSG.ResponseMessage);
-        }
-      });
   };
   getShift = () => {
-    var currentTime = moment(this.state.currentTime, 'h:mm a');
-    // this.setState({
-    //   currentTime : "8:51 am"
-    // })
-    // var currentTime = moment('8:51 am', 'h:mm a');
+    // var currentTime = moment(this.state.currentTime, 'h:mm a');
+    this.setState({
+      currentTime : "8:51 am"
+    })
+    var currentTime = moment('8:51 am', 'h:mm a');
     var morningClassStart1 = moment('8:40am', 'h:mm a');
     var morningClassEnd1 = moment('10:15am', 'h:mm a');
     var morningClassStart2 = moment('10:30am', 'h:mm a');
@@ -156,6 +130,41 @@ class Home extends Component {
       });
     }
   };
+  getClasses = () => {
+    const {currentShift} = this.state;
+    axios(
+      `${connectionObjects.myServerIp_}${connectionObjects.getClassesAPI}${currentShift}`,
+      {
+        method: 'GET',
+      },
+    )
+      .then(response => {
+        return response;
+      })
+      .then(resp => {
+        console.log(resp)
+        if (resp.status === 200) {
+          this.setState({
+            classes: [...resp.data.ShiftScheduleList],
+            dataLoaded: true,
+            refreshing: false
+          });
+        } else {
+          alert('Invalid error occured.');
+        }
+      })
+      .catch(err => {
+        if (err.response.status == 401) {
+          alert(`Error: ${err.response.data.ResponseMessage}`);
+        }else if (err.response.status == 500){
+          alert(`Error: ${err.response.data.ResponseMessage}`);
+        }else{
+          console.log('msg',err.message); // Just the message , no error
+          let errMSG = JSON.parse(err.request._response.response) ;//request details
+            alert(errMSG.ResponseMessage);
+        }
+      });
+  };
 
 
   callChild = (selectedItem) => {
@@ -165,9 +174,10 @@ class Home extends Component {
       currentTime : this.state.currentTime
     });
 
-  }
+  };
 
   render() {
+
     return (
       <View style={{flex: 1, backgroundColor: Colors.brandOne}}>
         <Card
@@ -209,8 +219,13 @@ class Home extends Component {
           <Text />
         </View>
 
-        {this.state.dataLoaded ? (
-          <ScrollView style={{padding: 15}}>
+       
+          <ScrollView refreshControl={
+            <RefreshControl
+              refreshing={this.state.refreshing}
+              onRefresh={this.onRefresh}
+            />
+          } style={{padding: 15}}>
             {this.state.classes.map((item, key) => {
              return <TouchableOpacity
                 key={key}
@@ -283,12 +298,10 @@ class Home extends Component {
               </TouchableOpacity>;
             })}
           </ScrollView>
-        ) : (
-          <Text>No Data Found</Text>
-        )}
+      
       </View>
     );
-  }
+  };
 }
 
 export default Home;

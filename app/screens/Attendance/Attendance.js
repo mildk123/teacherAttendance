@@ -16,6 +16,7 @@ import {
   Input,
   Item,
 } from 'native-base';
+import AsyncStorage from '@react-native-community/async-storage';
 import moment from 'moment';
 import axios from 'axios';
 import { connectionObjects } from '../../modules/connection'
@@ -170,6 +171,8 @@ class Attendance extends Component {
               modalVisible: false,
             },
             () => {
+              var classesChecked = [ ...classesChecked, this.state.classDetails.ScheduleID]
+              AsyncStorage.setItem("classesChecked", classesChecked)
               this.props.navigation.popToTop();
             },
           );
