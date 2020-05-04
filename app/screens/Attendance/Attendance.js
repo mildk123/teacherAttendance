@@ -56,6 +56,7 @@ class Attendance extends Component {
   getShift = () => {
     var selectedTime = this.props.navigation.state.params.currentTime;
     var currentTime = moment(selectedTime, 'h:mm a');
+    console.log(currentTime, 1231)
     // var currentTime = moment('10:51 am', 'h:mm a');
     var morningClassStart1 = moment('8:40am', 'h:mm a');
     var morningClassEnd1 = moment('10:15am', 'h:mm a');

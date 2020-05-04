@@ -70,11 +70,11 @@ class Home extends Component {
       });
   };
   getShift = () => {
-    // var currentTime = moment(this.state.currentTime, 'h:mm a');
-    this.setState({
-      currentTime : "8:51 am"
-    })
-    var currentTime = moment('8:51 am', 'h:mm a');
+    var currentTime = moment(this.state.currentTime, 'h:mm a');
+    // this.setState({
+    //   currentTime : "8:51 am"
+    // })
+    // var currentTime = moment('8:51 am', 'h:mm a');
     var morningClassStart1 = moment('8:40am', 'h:mm a');
     var morningClassEnd1 = moment('10:15am', 'h:mm a');
     var morningClassStart2 = moment('10:30am', 'h:mm a');

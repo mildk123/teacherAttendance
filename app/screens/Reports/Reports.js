@@ -9,7 +9,7 @@ import {
   Platform,
 } from 'react-native';
 import {Table, Row, Rows, TableWrapper} from 'react-native-table-component';
-import {Button, Text, Picker, Icon, Label, Item} from 'native-base';
+import {Button, Text, Picker, Icon, Label, Item, Spinner} from 'native-base';
 import XLSX from 'xlsx';
 
 // Permissions
@@ -485,17 +485,20 @@ export default class SheetJS extends Component {
           '5 Min',
         ],
       ],
+      teacherList: [],
+      isLoading: true,
       widthArr: [130, 120, 245],
 
       // cols: [{ name: "A", key: 0 }, { name: "B", key: 1 }, { name: "C", key: 2 }],
       // cols: make_cols("A1:C2")
     };
+    this.getTeachersList();
   }
 
-  // componentDidMount = () => {
-  //   this.requestStoragePermission();
-  //   this.getReportData();
-  // };
+  componentDidMount = () => {
+    //   this.requestStoragePermission();
+    //   this.getReportData();
+  };
 
   requestStoragePermission = async () => {
     try {
@@ -541,7 +544,7 @@ export default class SheetJS extends Component {
       });
   };
   getReportData = () => {
-    axios(connectionObjects.myServerIp_+connectionObjects.reportsAPI, {
+    axios(connectionObjects.myServerIp_ + connectionObjects.reportsAPI, {
       method: 'POST',
       mode: 'no-cors',
       headers: {
@@ -569,13 +572,12 @@ export default class SheetJS extends Component {
         }
       })
       .catch(err => {
-        if(err.response.status == 403){
-        alert(`Error: ${err.response.data.ResponseMessage}`)
-        }
-        else{
-          console.log('msg',err.message); // Just the message , no error
-          let errMSG = JSON.parse(err.request._response.response) ;//request details
-            alert(errMSG.ResponseMessage);
+        if (err.response.status == 403) {
+          alert(`Error: ${err.response.data.ResponseMessage}`);
+        } else {
+          console.log('msg', err.message); // Just the message , no error
+          let errMSG = JSON.parse(err.request._response.response); //request details
+          alert(errMSG.ResponseMessage);
         }
       });
   };
@@ -603,6 +605,32 @@ export default class SheetJS extends Component {
     }
   };
 
+  getTeachersList = () => {
+    axios(connectionObjects.myServerIp_ + connectionObjects.teachersListAPI)
+      .then(response => response)
+      .then(data => {
+        if (data.status == 200) {
+          console.log(data);
+          this.setState({
+            teacherList: [...data.data.TeachersListResponse],
+            isLoading: false,
+          });
+        } else {
+          alert('Unable to fetch data from server.');
+        }
+      })
+      .catch(err => {
+        if (err.response.status == 403) {
+          alert(`Error: ${err.response.data.ResponseMessage}`);
+        } else if (err.response.status == 404) {
+          alert(`Error: ${err.message}`);
+        } else {
+          console.log('msg', err.message); // Just the message , no error
+          let errMSG = JSON.parse(err.request._response.response); //request details
+          alert(errMSG.ResponseMessage);
+        }
+      });
+  };
   onTeacherChange(value) {
     this.setState({
       selectedTeacher: value,
@@ -610,6 +638,13 @@ export default class SheetJS extends Component {
   }
 
   render() {
+    if (this.state.isLoading) {
+      return (
+      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+        <Spinner color="teal" />
+      </View>
+      )
+    }
     return (
       <View style={{flex: 1, padding: 30, backgroundColor: Colors.appBarColor}}>
         <View>
@@ -692,7 +727,10 @@ export default class SheetJS extends Component {
             style={{width: undefined}}
             selectedValue={this.state.selectedTeacher}
             onValueChange={this.onTeacherChange.bind(this)}>
-            <Picker.Item label="Wallet" value="key0" />
+            {this.state.teacherList.map((item,key) => {
+              return <Picker.Item key={key} label={item.TeacherName} value={item.TeacherID} />
+            })}
+            
           </Picker>
         </Item>
 
@@ -713,6 +751,41 @@ export default class SheetJS extends Component {
             onPress={this.exportFile}>
             <Text>Generate</Text>
           </Button>
+        </View>
+
+        {/* Table */}
+        <View style={{maxHeight: 200}}>
+          <ScrollView
+            style={{backgroundColor: 'white'}}
+            contentContainerStyle={{
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+            horizontal={true}>
+            <Table style={styles.table}>
+              <TableWrapper>
+                <Row
+                  data={this.state.cols}
+                  style={styles.thead}
+                  textStyle={styles.text}
+                  widthArr={this.state.widthArr}
+                />
+              </TableWrapper>
+
+              <TouchableWithoutFeedback>
+                <ScrollView vertical={true}>
+                  <TableWrapper>
+                    <Rows
+                      data={this.state.data}
+                      style={styles.tr}
+                      textStyle={styles.text}
+                      widthArr={this.state.widthArr}
+                    />
+                  </TableWrapper>
+                </ScrollView>
+              </TouchableWithoutFeedback>
+            </Table>
+          </ScrollView>
         </View>
       </View>
     );
@@ -738,39 +811,3 @@ const styles = StyleSheet.create({
   text: {fontSize: 16, textAlign: 'center'},
   table: {width: '100%'},
 });
-
-{
-  /* <View style={{maxHeight: 200}}>
-<ScrollView
-  style={{backgroundColor: 'white'}}
-  contentContainerStyle={{
-    justifyContent: 'center',
-    alignItems: 'center',
-  }}
-  horizontal={true}>
-  <Table style={styles.table}>
-    <TableWrapper>
-      <Row
-        data={this.state.cols}
-        style={styles.thead}
-        textStyle={styles.text}
-        widthArr={this.state.widthArr}
-      />
-    </TableWrapper>
-
-    <TouchableWithoutFeedback>
-      <ScrollView vertical={true}>
-        <TableWrapper>
-          <Rows
-            data={this.state.data}
-            style={styles.tr}
-            textStyle={styles.text}
-            widthArr={this.state.widthArr}
-          />
-        </TableWrapper>
-      </ScrollView>
-    </TouchableWithoutFeedback>
-  </Table>
-</ScrollView>
-</View> */
-}

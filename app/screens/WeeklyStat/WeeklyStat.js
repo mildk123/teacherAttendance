@@ -2,7 +2,9 @@ import React, {Component} from 'react';
 import {StyleSheet, View} from 'react-native';
 import Colors from '../../modules/Colors';
 import PureChart from 'react-native-pure-chart';
-import {Button, Text, Picker, Icon, Label, Item} from 'native-base';
+import {Button, Text, Picker, Icon, Label, Item, Spinner} from 'native-base';
+import axios from 'axios';
+import {connectionObjects} from '../../modules/connection';
 
 let sampleData = [
   {
@@ -24,13 +26,43 @@ let sampleData = [
 
 export default class WeeklyStat extends Component {
   constructor(props) {
-    super(props)
-  
+    super(props);
+
     this.state = {
-       selectedTeacher : ''
-    }
+      selectedTeacher: '',
+      teacherList: [],
+      isLoading: true,
+    };
+
+    this.getTeachersList();
   }
-  
+
+  getTeachersList = () => {
+    axios(connectionObjects.myServerIp_ + connectionObjects.teachersListAPI)
+      .then(response => response)
+      .then(data => {
+        if (data.status == 200) {
+          console.log(data);
+          this.setState({
+            teacherList: [...data.data.TeachersListResponse],
+            isLoading: false,
+          });
+        } else {
+          alert('Unable to fetch data from server.');
+        }
+      })
+      .catch(err => {
+        if (err.response.status == 403) {
+          alert(`Error: ${err.response.data.ResponseMessage}`);
+        } else if (err.response.status == 404) {
+          alert(`Error: ${err.message}`);
+        } else {
+          console.log('msg', err.message); // Just the message , no error
+          let errMSG = JSON.parse(err.request._response.response); //request details
+          alert(errMSG.ResponseMessage);
+        }
+      });
+  };
   onTeacherChange(value) {
     this.setState({
       selectedTeacher: value,
@@ -38,6 +70,13 @@ export default class WeeklyStat extends Component {
   }
 
   render() {
+    if (this.state.isLoading) {
+      return (
+      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+        <Spinner color="teal" />
+      </View>
+      )
+    }
     return (
       <View style={{flex: 1, padding: 20, backgroundColor: Colors.appBarColor}}>
         <View style={{padding: 5}}>
@@ -49,8 +88,7 @@ export default class WeeklyStat extends Component {
             Name/ID from the below dropdown
           </Text>
         </View>
-        
-        
+
         <Item style={{marginVertical: 16}} picker>
           <Label style={{color: 'white', fontSize: 22, fontWeight: '700'}}>
             Select Teacher
@@ -61,11 +99,12 @@ export default class WeeklyStat extends Component {
             style={{width: undefined}}
             selectedValue={this.state.selectedTeacher}
             onValueChange={this.onTeacherChange.bind(this)}>
-            <Picker.Item label="Wallet" value="key0" />
+            {this.state.teacherList.map((item,key) => {
+              return <Picker.Item key={key} label={item.TeacherName} value={item.TeacherID} />
+            })}
           </Picker>
         </Item>
 
-        
         <View
           style={{
             flex: 1,
@@ -86,11 +125,11 @@ export default class WeeklyStat extends Component {
             highlightColor={'grey'}
           />
         </View>
-
       </View>
     );
   }
-}``
+}
+
 
 const styles = StyleSheet.create({
   instructions: {
